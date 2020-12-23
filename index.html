@@ -333,6 +333,204 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/23/misfire%E5%A4%84%E7%90%86%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="unknown">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/23/misfire%E5%A4%84%E7%90%86%E5%AD%A6%E4%B9%A0/" itemprop="url">misfire处理相关学习</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-23T14:26:45+08:00">
+                2020-12-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  598
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  2
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>##导致misfire的场景</p>
+<ol>
+<li><p>所有的线程都在忙于更高优先级的任务</p>
+</li>
+<li><p>任务本身CRASH了</p>
+</li>
+<li><p>代码的BUG，导置错误的设置了JOB</p>
+</li>
+</ol>
+<p>##quartz misfire的三种策略</p>
+<ul>
+<li><p>withMisfireHandlingInstructionIgnoreMisfires（所有misfire的任务会马上执行）</p>
+</li>
+<li><p>withMisfireHandlingInstructionDoNothing(所有的misfire不管，执行下一个周期的任务)</p>
+</li>
+<li><p>withMisfireHandlingInstructionFireAndProceed（会合并部分的misfire,正常执行下一个周期的任务）</p>
+</li>
+<li><p>qrtz_triggers表中misfire_instr失火策略相对应的枚举值</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;所有的misfile任务马上执行</span><br><span class="line">public static final int MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY &#x3D; -1;</span><br><span class="line">&#x2F;&#x2F;在Trigger中默认选择MISFIRE_INSTRUCTION_FIRE_ONCE_NOW 策略</span><br><span class="line">public static final int MISFIRE_INSTRUCTION_SMART_POLICY &#x3D; 0;</span><br><span class="line">&#x2F;&#x2F; CornTrigger默认策略，合并部分misfire，正常执行下一个周期的任务。</span><br><span class="line">public static final int MISFIRE_INSTRUCTION_FIRE_ONCE_NOW &#x3D; 1;</span><br><span class="line">&#x2F;&#x2F;所有的misFire都不管，执行下一个周期的任务。</span><br><span class="line">public static final int MISFIRE_INSTRUCTION_DO_NOTHING &#x3D; 2;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>可以通过setMisfireInstruction方法设置misfire策略。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CronTriggerFactoryBean triggerFactoryBean &#x3D; new CronTriggerFactoryBean();</span><br><span class="line">triggerFactoryBean.setName(&quot;corn_&quot; + clazzName);</span><br><span class="line">triggerFactoryBean.setJobDetail(jobFactory.getObject());</span><br><span class="line">triggerFactoryBean.setCronExpression(quartzCorn);</span><br><span class="line">triggerFactoryBean.setGroup(QUARTZ_TRIGGER_GROUP);</span><br><span class="line">&#x2F;&#x2F;设置misfire策略</span><br><span class="line">triggerFactoryBean.setMisfireInstruction(CronTrigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY);</span><br><span class="line">triggerFactoryBean.afterPropertiesSet();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>也可以通过CronScheduleBuilder设置misfire策略。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CronScheduleBuilder csb &#x3D; CronScheduleBuilder.cronSchedule(&quot;0&#x2F;5 * * * * ?&quot;);</span><br><span class="line">&#x2F;&#x2F;MISFIRE_INSTRUCTION_DO_NOTHING</span><br><span class="line">csb.withMisfireHandlingInstructionDoNothing();</span><br><span class="line">&#x2F;&#x2F;MISFIRE_INSTRUCTION_FIRE_ONCE_NOW</span><br><span class="line">csb.withMisfireHandlingInstructionFireAndProceed();&#x2F;&#x2F;(默认)</span><br><span class="line">&#x2F;&#x2F;MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY</span><br><span class="line">csb.withMisfireHandlingInstructionIgnoreMisfires();</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>##其它场景以及解决方案</p>
+<ol>
+<li>当一个任务执行的时间超过了它的调度的周期，这个时候quartz默认会去开启一条新的线程执行后续的调度任务。当调度的线程池满了以后，可能会导致任务中断并且后续不再继续执行此任务（目前观察如此，暂时未发现其它情况）</li>
+<li>为了防止上述情况的发生，暂定的方案为同一任务下，需要等上一次任务执行完成之后才可以开始下一次任务的执行。</li>
+</ol>
+<ul>
+<li><p>配置类进行配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MethodInvokingJobDetailFactoryBean jobDetail &#x3D; new MethodInvokingJobDetailFactoryBean();</span><br><span class="line">&#x2F;*</span><br><span class="line"> *  是否并发执行</span><br><span class="line">*  例如每5s执行一次任务，但是当前任务还没有执行完，就已经过了5s了，</span><br><span class="line">*  如果此处为true，则下一个任务会执行，如果此处为false，则下一个任务会等待上一个任务执行完后，再开始执行</span><br><span class="line">*&#x2F;</span><br><span class="line">jobDetail.setConcurrent(false);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>JOB类上新增注解</p>
+</li>
+</ul>
+<p>@DisallowConcurrentExecution 禁止并发执行多个相同定义的JobDetail，这个注解是加在Job类上的。如果类下有多个方法，多个方法可并发执行但是同一方法不能多次执行。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    <div>
+      
+    </div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/15/test-post/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -692,7 +890,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -700,6 +898,15 @@
 
             
 
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
             
 
           </nav>
