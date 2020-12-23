@@ -18,4 +18,10 @@
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
 ]]></content>
   </entry>
+  <entry>
+    <title>test-post</title>
+    <url>/2020/12/15/test-post/</url>
+    <content><![CDATA[<p>Map的相关使用<br>Map.getOrDefault(Object key, V defaultValue)方法的作用是：<br>  当Map集合中有这个key时，就使用这个key值；<br>  如果没有就使用默认值defaultValue。</p>
+]]></content>
+  </entry>
 </search>
